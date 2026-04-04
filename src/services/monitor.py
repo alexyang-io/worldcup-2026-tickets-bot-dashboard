@@ -1,0 +1,76 @@
+"""
+Page analysis and fallback server-side monitor.
+"""
+
+import time
+
+import requests as http_requests
+
+from config import (
+    CANNOT_ACCESS_TEXT,
+    CHECK_INTERVAL,
+    FIFA_URL,
+    SLACK_UPDATE_INTERVAL,
+    monitor_state,
+)
+from services.slack import send_slack_alert, send_slack_status_update
+
+
+def analyze_page(text: str, source: str):
+    ts = time.strftime("%H:%M:%S")
+    now = time.time()
+    monitor_state["last_check"] = ts
+    monitor_state["source"] = source
+
+    if CANNOT_ACCESS_TEXT in text:
+        monitor_state["status"] = "Still showing 'Cannot access' page"
+        monitor_state["changed"] = False
+    else:
+        if "In Queue" in text:
+            msg = "You are IN THE QUEUE! Go go go!"
+        elif "queue" in text.lower() or "waiting" in text.lower():
+            msg = "Queue page detected — may be opening!"
+        else:
+            preview = text[:100].replace("\n", " ").strip()
+            msg = f"Page changed! Preview: {preview}"
+        monitor_state["status"] = msg
+        monitor_state["changed"] = True
+
+        if not monitor_state["alert_sent"]:
+            send_slack_alert(msg)
+            monitor_state["alert_sent"] = True
+
+    # Send periodic Slack status update every 60 seconds
+    if now - monitor_state["last_slack_update"] >= SLACK_UPDATE_INTERVAL:
+        monitor_state["last_slack_update"] = now
+        summary = text.strip().replace("\n", " | ")
+        if len(summary) > 300:
+            summary = summary[:300] + "…"
+        send_slack_status_update(monitor_state["status"], summary)
+
+    print(f"[{ts}] [{source}] {monitor_state['status']}")
+
+
+def fallback_monitor_loop():
+    # Give extension 60s to connect before starting fallback
+    time.sleep(60)
+    while True:
+        if monitor_state["extension_connected"] and monitor_state["source"] == "extension":
+            last = monitor_state.get("last_check")
+            if last:
+                time.sleep(CHECK_INTERVAL)
+                continue
+
+        try:
+            resp = http_requests.get(FIFA_URL, timeout=20, headers={
+                "User-Agent": (
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/123.0.0.0 Safari/537.36"
+                ),
+            })
+            analyze_page(resp.text, source="server")
+        except Exception as e:
+            monitor_state["status"] = f"Error: {e}"
+
+        time.sleep(CHECK_INTERVAL)
