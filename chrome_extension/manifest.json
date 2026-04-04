@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "FIFA Ticket Monitor",
+  "version": "1.0",
+  "description": "Monitors the FIFA ticket page and reports status to the local dashboard.",
+  "permissions": [],
+  "host_permissions": [
+    "http://localhost:7777/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://access.tickets.fifa.com/*"
+      ],
+      "js": ["monitor.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
