@@ -13,23 +13,22 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 40px 20px;
+    padding: 30px 20px;
   }
   .card {
     background: #181830;
     border: 1px solid #2a2a4a;
     border-radius: 16px;
-    padding: 40px;
-    max-width: 600px;
+    padding: 32px;
+    max-width: 640px;
     width: 100%;
     text-align: center;
+    margin-bottom: 20px;
   }
-  h1 { font-size: 22px; color: #fff; margin-bottom: 6px; }
-  .subtitle { color: #888; font-size: 13px; margin-bottom: 28px; }
+  h1 { font-size: 22px; color: #fff; margin-bottom: 4px; }
+  .subtitle { color: #888; font-size: 13px; margin-bottom: 24px; }
 
-  /* Status */
-  .status-section { margin-bottom: 24px; }
+  .status-section { margin-bottom: 20px; }
   .dot {
     width: 14px; height: 14px;
     border-radius: 50%;
@@ -49,28 +48,34 @@
   .status-text.changed { color: #5cb85c; font-weight: bold; }
   .meta { color: #555; font-size: 12px; margin-top: 6px; }
 
-  /* Extension status */
-  .ext-status {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    margin-bottom: 20px;
+  .badges {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
   }
-  .ext-status.connected { background: #1a3a1a; color: #5cb85c; border: 1px solid #2a5a2a; }
-  .ext-status.waiting { background: #3a3a1a; color: #f0ad4e; border: 1px solid #5a5a2a; }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+  }
+  .badge.green  { background: #1a3a1a; color: #5cb85c; border: 1px solid #2a5a2a; }
+  .badge.yellow { background: #3a3a1a; color: #f0ad4e; border: 1px solid #5a5a2a; }
+  .badge.blue   { background: #1a2a4a; color: #5b9bf6; border: 1px solid #2a4a6a; }
+  .badge.red    { background: #3a1a1a; color: #d9534f; border: 1px solid #5a2a2a; }
 
-  /* Alert banner */
   .alert-banner {
     display: none;
-    padding: 16px 24px;
+    padding: 14px 24px;
     background: linear-gradient(135deg, #28a745, #218838);
     color: #fff;
     font-size: 18px;
     font-weight: bold;
     border-radius: 12px;
     margin-bottom: 20px;
-    max-width: 600px;
+    max-width: 640px;
     width: 100%;
     text-align: center;
     animation: popIn 0.4s ease;
@@ -83,45 +88,103 @@
 
   .btn {
     display: inline-block;
-    padding: 12px 28px;
+    padding: 10px 24px;
     background: #3b82f6;
     color: #fff;
     text-decoration: none;
-    border-radius: 10px;
-    font-size: 15px;
+    border-radius: 8px;
+    font-size: 14px;
     font-weight: 600;
     border: none;
     cursor: pointer;
     transition: background 0.2s;
-    margin: 6px;
+    margin: 4px;
   }
   .btn:hover { background: #2563eb; }
   .btn.secondary {
     background: transparent;
     border: 1px solid #444;
     color: #aaa;
-    font-size: 13px;
-    padding: 8px 18px;
+    font-size: 12px;
+    padding: 6px 14px;
   }
   .btn.secondary:hover { background: #222; color: #fff; }
 
-  .info {
-    margin-top: 24px;
-    padding: 16px;
-    background: #1e1e38;
-    border-radius: 8px;
-    font-size: 13px;
-    color: #777;
-    line-height: 1.7;
+  /* Command input */
+  .cmd-section {
+    margin-top: 20px;
     text-align: left;
   }
-  .info b { color: #aaa; }
+  .cmd-section h3 {
+    font-size: 14px;
+    color: #aaa;
+    margin-bottom: 8px;
+  }
+  .cmd-input-row {
+    display: flex;
+    gap: 8px;
+  }
+  .cmd-input {
+    flex: 1;
+    padding: 10px 14px;
+    background: #12122a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #e0e0e0;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+  }
+  .cmd-input:focus { border-color: #3b82f6; }
+  .cmd-input::placeholder { color: #555; }
+  .cmd-response {
+    margin-top: 8px;
+    padding: 10px;
+    background: #12122a;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #8b8;
+    white-space: pre-wrap;
+    font-family: 'SF Mono', Menlo, monospace;
+    display: none;
+  }
+  .cmd-response.show { display: block; }
+
+  /* Command log */
+  .log-section {
+    margin-top: 12px;
+    max-height: 160px;
+    overflow-y: auto;
+    text-align: left;
+    font-size: 12px;
+  }
+  .log-entry {
+    padding: 4px 0;
+    border-bottom: 1px solid #1e1e38;
+    color: #666;
+  }
+  .log-entry .time { color: #444; }
+  .log-entry .src  { color: #5b9bf6; }
+  .log-entry .cmd  { color: #bbb; }
+  .log-entry .resp { color: #7a7; }
+
+  .info {
+    margin-top: 16px;
+    padding: 14px;
+    background: #1e1e38;
+    border-radius: 8px;
+    font-size: 12px;
+    color: #666;
+    line-height: 1.6;
+    text-align: left;
+  }
+  .info b { color: #999; }
   .info code {
     background: #252545;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 12px;
-    color: #bbb;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 11px;
+    color: #aaa;
   }
 </style>
 </head>
@@ -135,8 +198,10 @@
   <h1>FIFA World Cup 2026</h1>
   <p class="subtitle">Ticket Page Monitor</p>
 
-  <div>
-    <span class="ext-status waiting" id="extStatus">Extension: waiting…</span>
+  <div class="badges" id="badges">
+    <span class="badge yellow" id="extBadge">Extension: waiting</span>
+    <span class="badge blue" id="reportBadge">Report: every 60s</span>
+    <span class="badge yellow" id="slackCmdBadge">Slack cmds: checking…</span>
   </div>
 
   <div class="status-section">
@@ -149,21 +214,31 @@
     <button class="btn" onclick="window.open('{{ fifa_url }}', 'fifa_tickets')">
       Open FIFA Ticket Page
     </button>
+    <button class="btn secondary" onclick="sendCmd('reset')">Reset Alert</button>
+    <button class="btn secondary" onclick="sendCmd('report now')">Report Now</button>
   </div>
-  <div style="margin-top: 8px;">
-    <button class="btn secondary" onclick="resetAlert()">Reset Alert</button>
+
+  <!-- Command input -->
+  <div class="cmd-section">
+    <h3>Command Console</h3>
+    <div class="cmd-input-row">
+      <input class="cmd-input" id="cmdInput" placeholder="Type a command… (try 'help')"
+             onkeydown="if(event.key==='Enter')sendCmdFromInput()">
+      <button class="btn" style="padding:10px 16px;" onclick="sendCmdFromInput()">Run</button>
+    </div>
+    <div class="cmd-response" id="cmdResponse"></div>
+
+    <div class="log-section" id="logSection"></div>
   </div>
 
   <div class="info">
-    <b>Setup:</b><br>
-    1. Go to <code>chrome://extensions</code> in Chrome<br>
-    2. Enable <b>Developer mode</b> (toggle top-right)<br>
-    3. Click <b>Load unpacked</b> → select the <code>chrome_extension/</code> folder<br>
-    4. Click "Open FIFA Ticket Page" above<br><br>
-    <b>How it works:</b><br>
-    The extension reads the <b>actual content</b> of your FIFA tab every 10 seconds
-    and reports it here. When the page changes from "Cannot access" →
-    Slack alert + sound + browser notification. You interact with the page normally.
+    <b>Commands</b> (type here or in Slack):<br>
+    <code>report every 2 minutes</code> — change Slack report frequency<br>
+    <code>report now</code> — send a report immediately<br>
+    <code>pause</code> / <code>resume</code> — pause/resume Slack reports<br>
+    <code>status</code> — show current status<br>
+    <code>reset</code> — reset alert state<br>
+    <code>help</code> — show all commands
   </div>
 </div>
 
@@ -171,14 +246,53 @@
   const dot = document.getElementById('dot');
   const statusEl = document.getElementById('status');
   const metaEl = document.getElementById('meta');
-  const extStatus = document.getElementById('extStatus');
+  const extBadge = document.getElementById('extBadge');
+  const reportBadge = document.getElementById('reportBadge');
+  const slackCmdBadge = document.getElementById('slackCmdBadge');
   const banner = document.getElementById('alertBanner');
+  const cmdInput = document.getElementById('cmdInput');
+  const cmdResponse = document.getElementById('cmdResponse');
+  const logSection = document.getElementById('logSection');
   let alertShown = false;
 
-  function resetAlert() {
-    fetch('/api/reset', { method: 'POST' });
-    alertShown = false;
-    banner.classList.remove('show');
+  async function sendCmd(cmd) {
+    try {
+      const r = await fetch('/api/command', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({command: cmd}),
+      });
+      const data = await r.json();
+      cmdResponse.textContent = '> ' + cmd + '\n' + data.response;
+      cmdResponse.classList.add('show');
+      refreshLog();
+      poll();
+    } catch(e) {
+      cmdResponse.textContent = 'Error: ' + e.message;
+      cmdResponse.classList.add('show');
+    }
+  }
+
+  function sendCmdFromInput() {
+    const cmd = cmdInput.value.trim();
+    if (!cmd) return;
+    sendCmd(cmd);
+    cmdInput.value = '';
+  }
+
+  async function refreshLog() {
+    try {
+      const r = await fetch('/api/commands');
+      const logs = await r.json();
+      logSection.innerHTML = logs.slice(-10).reverse().map(l =>
+        `<div class="log-entry">
+          <span class="time">${l.time}</span>
+          <span class="src">[${l.source}]</span>
+          <span class="cmd">${l.command}</span>
+          → <span class="resp">${l.response.split('\n')[0]}</span>
+        </div>`
+      ).join('');
+    } catch(e) {}
   }
 
   async function poll() {
@@ -187,13 +301,20 @@
       const data = await r.json();
       statusEl.textContent = data.status;
 
-      // Extension connection status
+      // Badges
       if (data.extension_connected) {
-        extStatus.textContent = 'Extension: connected';
-        extStatus.className = 'ext-status connected';
+        extBadge.textContent = 'Extension: connected';
+        extBadge.className = 'badge green';
       }
+      if (data.settings) {
+        const ri = data.settings.report_interval;
+        const riText = ri >= 60 ? `${Math.floor(ri/60)}m${ri%60?` ${ri%60}s`:''}` : `${ri}s`;
+        reportBadge.textContent = `Report: every ${riText}` + (data.settings.paused ? ' (PAUSED)' : '');
+        reportBadge.className = data.settings.paused ? 'badge red' : 'badge blue';
+      }
+      slackCmdBadge.textContent = data.settings ? 'Slack cmds: active' : 'Slack cmds: off';
+      slackCmdBadge.className = 'badge green';
 
-      // Meta info
       let meta = '';
       if (data.last_check) meta += 'Last check: ' + data.last_check;
       if (data.source) meta += ' (via ' + data.source + ')';
@@ -205,7 +326,7 @@
         if (!alertShown) {
           banner.classList.add('show');
           alertShown = true;
-          try { new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1sbHJ9g4eFh4mIiIeGhYSCf3x5dnRxb21sa2pqa2xtb3J1eHt+gYSGiImJiYmIh4WDgH17eHVzcG5sa2pqamtsbm9ydXh7foGEhoeIiIiIh4aEgn98eXZzcG5sa2pqamtsbW9ydXh7foGEhoeIiIiIh4aEgn98eXZzcG5sa2ppamtsbW9ydXh7foGEhoeIiIiIh4aEgn98eXZzcG5samppamtsbW9ydXh7foGEhoeIiIiIh4aEgn98eXZzcG5samppamtsbW9ydnh7foGEhoeIiIiIh4aEgn98eXZzcG5samppamtsbW9ydXh7fQ==').play(); } catch(e) {}
+          try { new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1sbHJ9g4eFh4mIiIeGhYSCf3x5dnRxb21sa2pqa2xtb3J1eHt+gYSGiImJiYmIh4WDgH17eHVzcG5sa2pqamtsbm9ydXh7foGEhoeIiIiIh4aEgn98eXZzcG5sa2ppamtsbW9ydXh7foGEhoeIiIiIh4aEgn98eXZzcG5samppamtsbW9ydXh7foGEhoeIiIiIh4aEgn98eXZzcG5samppamtsbW9ydXh7foGEhoeIiIiIh4aEgn98eXZzcG5samppamtsbW9ydnh7foGEhoeIiIiIh4aEgn98eXZzcG5samppamtsbW9ydXh7fQ==').play(); } catch(e) {}
           if (Notification.permission === 'granted') {
             new Notification('FIFA Ticket Alert!', { body: data.status });
           }
@@ -231,7 +352,9 @@
   }
 
   setInterval(poll, 3000);
+  setInterval(refreshLog, 10000);
   poll();
+  refreshLog();
 </script>
 </body>
 </html>

@@ -10,8 +10,8 @@ from config import (
     CANNOT_ACCESS_TEXT,
     CHECK_INTERVAL,
     FIFA_URL,
-    SLACK_UPDATE_INTERVAL,
     monitor_state,
+    settings,
 )
 from services.slack import send_slack_alert, send_slack_status_update
 
@@ -42,12 +42,12 @@ def analyze_page(text: str, source: str):
         monitor_state["status"] = msg
         monitor_state["changed"] = True
 
-        if not monitor_state["alert_sent"]:
+        if not monitor_state["alert_sent"] and settings["alert_on_change"]:
             send_slack_alert(msg)
             monitor_state["alert_sent"] = True
 
-    # Send periodic Slack status update every 60 seconds
-    if now - monitor_state["last_slack_update"] >= SLACK_UPDATE_INTERVAL:
+    # Periodic Slack status update
+    if not settings["paused"] and now - monitor_state["last_slack_update"] >= settings["report_interval"]:
         monitor_state["last_slack_update"] = now
         summary = text.strip().replace("\n", " | ")
         if len(summary) > 300:
@@ -58,7 +58,6 @@ def analyze_page(text: str, source: str):
 
 
 def fallback_monitor_loop():
-    # Give extension 60s to connect before starting fallback
     time.sleep(60)
     while True:
         if monitor_state["extension_connected"] and monitor_state["source"] == "extension":

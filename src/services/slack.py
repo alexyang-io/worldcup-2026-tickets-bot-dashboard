@@ -6,41 +6,33 @@ import time
 
 import requests as http_requests
 
-from config import FIFA_URL, SLACK_WEBHOOK_URL
+from config import FIFA_URL, SLACK_WEBHOOK_URL, settings
 
 
-def send_slack_alert(message: str):
+def send_slack_message(text: str):
     if not SLACK_WEBHOOK_URL:
-        print(f"[ALERT - no webhook] {message}")
+        print(f"[Slack - no webhook] {text}")
         return
-    payload = {
-        "text": (
-            ":rotating_light: *FIFA WC 2026 Ticket Alert* :rotating_light:\n"
-            f"{message}\n\n<{FIFA_URL}|Open ticket page>"
-        ),
-    }
     try:
-        r = http_requests.post(SLACK_WEBHOOK_URL, json=payload, timeout=10)
-        print(f"Slack alert {'sent' if r.ok else 'failed'}: {r.status_code}")
+        r = http_requests.post(SLACK_WEBHOOK_URL, json={"text": text}, timeout=10)
+        print(f"Slack msg {'sent' if r.ok else 'failed'}: {r.status_code}")
     except Exception as e:
         print(f"Slack error: {e}")
 
 
+def send_slack_alert(message: str):
+    send_slack_message(
+        f":rotating_light: *FIFA WC 2026 Ticket Alert* :rotating_light:\n"
+        f"{message}\n\n<{FIFA_URL}|Open ticket page>"
+    )
+
+
 def send_slack_status_update(status: str, page_summary: str):
-    if not SLACK_WEBHOOK_URL:
-        print(f"[STATUS - no webhook] {status}")
-        return
     ts = time.strftime("%Y-%m-%d %H:%M:%S")
-    payload = {
-        "text": (
-            f":satellite: *FIFA Ticket Monitor — Status Update*\n"
-            f"*Time:* {ts}\n"
-            f"*Status:* {status}\n"
-            f"*Page content:* {page_summary}"
-        ),
-    }
-    try:
-        r = http_requests.post(SLACK_WEBHOOK_URL, json=payload, timeout=10)
-        print(f"Slack status update {'sent' if r.ok else 'failed'}: {r.status_code}")
-    except Exception as e:
-        print(f"Slack status update error: {e}")
+    send_slack_message(
+        f":satellite: *FIFA Ticket Monitor — Status Update*\n"
+        f"*Time:* {ts}\n"
+        f"*Status:* {status}\n"
+        f"*Report interval:* {settings['report_interval']}s | *Paused:* {settings['paused']}\n"
+        f"*Page content:* {page_summary}"
+    )
