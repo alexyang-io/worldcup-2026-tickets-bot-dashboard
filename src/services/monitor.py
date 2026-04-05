@@ -22,6 +22,12 @@ def analyze_page(text: str, source: str):
     monitor_state["last_check"] = ts
     monitor_state["source"] = source
 
+    # Ignore bad/error responses from server-side fallback
+    if source == "server" and ("bad request" in text.lower() or "<title>Bad" in text or len(text.strip()) < 20):
+        monitor_state["status"] = "Server check got blocked — waiting for extension"
+        print(f"[{ts}] [{source}] Ignoring bad response from server")
+        return
+
     if CANNOT_ACCESS_TEXT in text:
         monitor_state["status"] = "Still showing 'Cannot access' page"
         monitor_state["changed"] = False
