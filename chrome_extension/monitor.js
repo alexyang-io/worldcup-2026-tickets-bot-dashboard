@@ -76,52 +76,36 @@ function parseCountdown(text) {
  * Returns a number 0-100, or null if not found.
  */
 function parseQueueProgress() {
-  // Method 1: aria-valuenow on progress elements
+  // Primary: look for the FIFA progress-arc SVG circle by ID
+  const progressArc = document.getElementById("progress-arc");
+  if (progressArc) {
+    const da = parseFloat(progressArc.getAttribute("stroke-dasharray"));
+    const doff = parseFloat(progressArc.getAttribute("stroke-dashoffset"));
+    if (da > 0 && !isNaN(doff)) {
+      const progress = ((da - Math.abs(doff)) / da) * 100;
+      return Math.round(progress * 10) / 10;
+    }
+  }
+
+  // Fallback: look for SVG circles with non-zero dashoffset (skip background circles)
+  const circles = document.querySelectorAll("svg circle");
+  for (const circle of circles) {
+    const da = parseFloat(circle.getAttribute("stroke-dasharray"));
+    const doff = parseFloat(circle.getAttribute("stroke-dashoffset"));
+    // Skip background circles (offset=0 means full circle, not progress)
+    if (da > 0 && !isNaN(doff) && Math.abs(doff) > 0) {
+      const progress = ((da - Math.abs(doff)) / da) * 100;
+      if (progress >= 0 && progress <= 100) return Math.round(progress * 10) / 10;
+    }
+  }
+
+  // Fallback: aria-valuenow
   const ariaEls = document.querySelectorAll('[aria-valuenow], [role="progressbar"]');
   for (const el of ariaEls) {
     const val = parseFloat(el.getAttribute("aria-valuenow"));
     if (!isNaN(val) && val >= 0 && val <= 100) return val;
   }
 
-  // Method 2: SVG circle with stroke-dashoffset (common for circular progress)
-  const circles = document.querySelectorAll("svg circle");
-  for (const circle of circles) {
-    const style = window.getComputedStyle(circle);
-    const dasharray = parseFloat(style.strokeDasharray);
-    const dashoffset = parseFloat(style.strokeDashoffset);
-    if (dasharray > 0 && !isNaN(dashoffset)) {
-      const progress = ((dasharray - Math.abs(dashoffset)) / dasharray) * 100;
-      if (progress >= 0 && progress <= 100) return Math.round(progress * 10) / 10;
-    }
-    // Also check attributes directly
-    const da = parseFloat(circle.getAttribute("stroke-dasharray"));
-    const doff = parseFloat(circle.getAttribute("stroke-dashoffset"));
-    if (da > 0 && !isNaN(doff)) {
-      const progress = ((da - Math.abs(doff)) / da) * 100;
-      if (progress >= 0 && progress <= 100) return Math.round(progress * 10) / 10;
-    }
-  }
-
-  // Method 3: CSS conic-gradient on any element
-  const allEls = document.querySelectorAll("*");
-  for (const el of allEls) {
-    const bg = window.getComputedStyle(el).backgroundImage;
-    if (bg && bg.includes("conic-gradient")) {
-      const match = bg.match(/(\d+(?:\.\d+)?)%/);
-      if (match) return parseFloat(match[1]);
-    }
-  }
-
-  // Method 4: Look for percentage text near "In Queue" or progress indicators
-  const body = document.body ? document.body.innerText : "";
-  const pctMatch = body.match(/(\d{1,3}(?:\.\d+)?)\s*%/);
-  if (pctMatch) {
-    const val = parseFloat(pctMatch[1]);
-    if (val >= 0 && val <= 100) return val;
-  }
-
-  // Method 5: Dump all SVG/progress DOM info for debugging
-  // (this gets sent to the server so we can inspect it)
   return null;
 }
 
@@ -195,8 +179,8 @@ async function report() {
   const url = window.location.href;
   const countdownSeconds = parseCountdown(text);
   const queueProgress = parseQueueProgress();
-  const progressDebug = getProgressDebugInfo();
-  const domSnapshot = getDomSnapshot();
+  const progressDebug = queueProgress === null ? getProgressDebugInfo() : null;
+  const domSnapshot = queueProgress === null ? getDomSnapshot() : null;
 
   // Speed up reporting when countdown is active
   const hasCountdown = countdownSeconds !== null;
