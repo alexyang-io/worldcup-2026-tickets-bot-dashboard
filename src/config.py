@@ -22,6 +22,8 @@ monitor_state = {
     "source": None,
     "extension_connected": False,
     "last_slack_update": 0,
+    "countdown_seconds": None,
+    "countdown_status": None,
 }
 
 # Mutable settings (controllable via commands)
@@ -29,7 +31,11 @@ settings = {
     "report_interval": 60,    # seconds between Slack status reports
     "paused": False,           # pause Slack reports
     "alert_on_change": True,   # send alert on page change
+    "countdown_thresholds": [30, 20, 10, 5, 2, 1],  # minutes remaining to alert
 }
+
+# Track which thresholds have been alerted
+countdown_alerted = set()
 
 # Command log for dashboard display
 command_log = []  # list of {"time": str, "source": str, "command": str, "response": str}

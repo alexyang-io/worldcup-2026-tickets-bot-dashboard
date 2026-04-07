@@ -6,7 +6,7 @@ from flask import Blueprint, jsonify, request
 
 from config import command_log, monitor_state, settings
 from services.commands import process_command
-from services.monitor import analyze_page
+from services.monitor import analyze_page, check_countdown_thresholds
 
 api_bp = Blueprint("api", __name__)
 
@@ -18,6 +18,19 @@ def page_content():
         return jsonify({"error": "missing text"}), 400
 
     monitor_state["extension_connected"] = True
+
+    # Handle countdown from extension
+    countdown_secs = data.get("countdown_seconds")
+    if countdown_secs is not None:
+        monitor_state["countdown_seconds"] = countdown_secs
+        mins = countdown_secs // 60
+        secs = countdown_secs % 60
+        monitor_state["countdown_status"] = f"{mins:02d}:{secs:02d} remaining"
+        check_countdown_thresholds(countdown_secs)
+    else:
+        monitor_state["countdown_seconds"] = None
+        monitor_state["countdown_status"] = None
+
     analyze_page(data["text"], source="extension")
     return jsonify({"ok": True})
 

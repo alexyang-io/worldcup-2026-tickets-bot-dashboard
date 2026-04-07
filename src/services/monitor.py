@@ -10,10 +10,33 @@ from config import (
     CANNOT_ACCESS_TEXT,
     CHECK_INTERVAL,
     FIFA_URL,
+    countdown_alerted,
     monitor_state,
     settings,
 )
-from services.slack import send_slack_alert, send_slack_status_update
+from services.slack import send_slack_alert, send_slack_message, send_slack_status_update
+
+
+def send_countdown_alert(minutes_remaining: int, seconds_total: int):
+    mins = seconds_total // 60
+    secs = seconds_total % 60
+    send_slack_message(
+        f":hourglass_flowing_sand: *Countdown Alert — {minutes_remaining} min threshold!*\n"
+        f"Time remaining: *{mins:02d}:{secs:02d}*\n"
+        f"Get ready to grab those tickets!"
+    )
+
+
+def check_countdown_thresholds(seconds_remaining: int):
+    """Check if countdown crossed any configured thresholds and send alerts."""
+    if seconds_remaining is None:
+        return
+    minutes_remaining = seconds_remaining / 60.0
+    for threshold in sorted(settings["countdown_thresholds"], reverse=True):
+        if minutes_remaining <= threshold and threshold not in countdown_alerted:
+            countdown_alerted.add(threshold)
+            send_countdown_alert(threshold, seconds_remaining)
+            print(f"Countdown alert: {threshold}min threshold (actual: {seconds_remaining}s)")
 
 
 def analyze_page(text: str, source: str):
