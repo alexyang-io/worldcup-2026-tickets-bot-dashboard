@@ -76,7 +76,7 @@ def process_command(cmd: str, source: str = "dashboard") -> str:
         response = f"Countdown alerts reset. Thresholds: {settings['countdown_thresholds']} min"
 
     # help
-    elif cmd == "help":
+    elif cmd in ("help", "list commands", "commands"):
         response = (
             "Commands:\n"
             "  report every N minutes    — change report frequency\n"

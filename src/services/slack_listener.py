@@ -16,7 +16,24 @@ def slack_command_listener():
         return
 
     print(f"Slack command listener started for channel {SLACK_CHANNEL_ID}")
-    last_ts = str(time.time())  # only process messages after startup
+
+    # Get the latest message ts so we only process NEW messages from now
+    try:
+        resp = http_requests.get(
+            "https://slack.com/api/conversations.history",
+            headers={"Authorization": f"Bearer {SLACK_BOT_TOKEN}"},
+            params={"channel": SLACK_CHANNEL_ID, "limit": 1},
+            timeout=15,
+        )
+        data = resp.json()
+        if data.get("ok") and data.get("messages"):
+            last_ts = data["messages"][0]["ts"]
+        else:
+            last_ts = str(time.time())
+        print(f"Slack listener initialized, last_ts={last_ts}")
+    except Exception as e:
+        print(f"Slack listener init error: {e}")
+        last_ts = str(time.time())
 
     while True:
         try:
@@ -32,24 +49,22 @@ def slack_command_listener():
             )
             data = resp.json()
             if not data.get("ok"):
-                print(f"Slack listener API error: {data.get('error', 'unknown')} — need a xoxb- Bot Token with channels:history scope")
-            if data.get("ok") and data.get("messages"):
+                print(f"Slack listener API error: {data.get('error', 'unknown')}")
+            elif data.get("messages"):
                 # Process messages oldest-first
-                for msg in reversed(data["messages"]):
-                    # Skip bot messages (our own replies)
+                for msg in sorted(data["messages"], key=lambda m: float(m.get("ts", "0"))):
+                    msg_ts = msg.get("ts", "0")
+                    # Always advance last_ts to avoid reprocessing
+                    if float(msg_ts) > float(last_ts):
+                        last_ts = msg_ts
+                    # Skip bot messages
                     if msg.get("bot_id") or msg.get("subtype"):
                         continue
                     text = msg.get("text", "").strip()
-                    msg_ts = msg.get("ts", last_ts)
-                    if text and float(msg_ts) > float(last_ts):
+                    if text:
+                        print(f"Slack command received: '{text}'")
                         process_command(text, source="slack")
-                        last_ts = msg_ts
-                # Update last_ts to most recent
-                if data["messages"]:
-                    newest_ts = max(m.get("ts", "0") for m in data["messages"])
-                    if float(newest_ts) > float(last_ts):
-                        last_ts = newest_ts
         except Exception as e:
             print(f"Slack listener error: {e}")
 
-        time.sleep(5)  # poll every 5 seconds
+        time.sleep(5)
