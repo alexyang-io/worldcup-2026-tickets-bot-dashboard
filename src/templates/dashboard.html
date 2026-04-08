@@ -202,6 +202,7 @@
     <span class="badge yellow" id="extBadge">Extension: waiting</span>
     <span class="badge blue" id="reportBadge">Report: every 60s</span>
     <span class="badge yellow" id="slackCmdBadge">Slack cmds: checking…</span>
+    <span class="badge blue" id="countdownBadge">Countdown: —</span>
   </div>
 
   <div class="status-section">
@@ -235,6 +236,8 @@
     <b>Commands</b> (type here or in Slack):<br>
     <code>report every 2 minutes</code> — change Slack report frequency<br>
     <code>report now</code> — send a report immediately<br>
+    <code>countdown alerts 30,20,10,5,2,1</code> — set countdown thresholds (min)<br>
+    <code>reset countdown</code> — re-arm countdown alerts<br>
     <code>pause</code> / <code>resume</code> — pause/resume Slack reports<br>
     <code>status</code> — show current status<br>
     <code>reset</code> — reset alert state<br>
@@ -249,6 +252,7 @@
   const extBadge = document.getElementById('extBadge');
   const reportBadge = document.getElementById('reportBadge');
   const slackCmdBadge = document.getElementById('slackCmdBadge');
+  const countdownBadge = document.getElementById('countdownBadge');
   const banner = document.getElementById('alertBanner');
   const cmdInput = document.getElementById('cmdInput');
   const cmdResponse = document.getElementById('cmdResponse');
@@ -314,6 +318,16 @@
       }
       slackCmdBadge.textContent = data.settings ? 'Slack cmds: active' : 'Slack cmds: off';
       slackCmdBadge.className = 'badge green';
+
+      // Countdown badge
+      if (data.countdown_status) {
+        countdownBadge.textContent = 'Countdown: ' + data.countdown_status;
+        const secs = data.countdown_seconds || 0;
+        countdownBadge.className = secs <= 300 ? 'badge red' : secs <= 600 ? 'badge yellow' : 'badge blue';
+      } else {
+        countdownBadge.textContent = 'Countdown: —';
+        countdownBadge.className = 'badge blue';
+      }
 
       let meta = '';
       if (data.last_check) meta += 'Last check: ' + data.last_check;

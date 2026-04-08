@@ -31,6 +31,8 @@ def slack_command_listener():
                 timeout=15,
             )
             data = resp.json()
+            if not data.get("ok"):
+                print(f"Slack listener API error: {data.get('error', 'unknown')} — need a xoxb- Bot Token with channels:history scope")
             if data.get("ok") and data.get("messages"):
                 # Process messages oldest-first
                 for msg in reversed(data["messages"]):
