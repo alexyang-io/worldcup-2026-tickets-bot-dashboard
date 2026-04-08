@@ -26,23 +26,17 @@ The sales phase landing page before the queue opens. Nothing to do yet but wait.
 
 The dreaded "does not exist" page. This is where you'll spend most of your time. The monitor watches for any change away from this state.
 
-### 3. Countdown (Minutes)
-
-The queue is about to open. A countdown timer appears showing minutes and seconds remaining. The monitor parses this and sends Slack alerts at configurable thresholds (30, 20, 10, 5, 2, 1 minutes by default).
-
-![Countdown minutes](screens/2.%20Screenshot%20-%20countdown%20minutes.png)
-
-### 4. Countdown (Seconds)
-
-Final seconds before entry. The monitor speeds up its reporting interval from 10s to 3s during countdowns.
-
-![Countdown seconds](screens/3.%20Screenshot%20-%20countdown%20seconds.png)
-
-### 5. In Queue
+### 3. In Queue
 
 You're in. The monitor reads the circular SVG progress bar and reports your queue progress percentage.
 
 ![In Queue](screens/1.%20Screenshot%20-%20Waiting%20in%20Queue.png)
+
+### 4. Countdown
+
+The queue is about to open. A countdown timer appears showing minutes and seconds remaining. The monitor parses this, speeds up its reporting interval from 10s to 3s, and sends Slack alerts at configurable thresholds (30, 20, 10, 5, 2, 1 minutes by default).
+
+![Countdown](screens/2.%20Screenshot%20-%20countdown%20minutes.png)
 
 ## Architecture
 
