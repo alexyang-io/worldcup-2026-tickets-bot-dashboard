@@ -2,6 +2,8 @@
 
 A real-time monitoring dashboard and alert system for the FIFA World Cup 2026 last-minute ticket sales queue. Built with a Flask web app, a Chrome extension, and Slack integration.
 
+> **Legal Disclaimer:** This tool is a **monitoring and notification assistant only**. It watches a web page and alerts a human — it does not purchase, reserve, or check out tickets. Under the United States [BOTS Act of 2016](https://www.congress.gov/bill/114th-congress/senate-bill/3183) (Better Online Ticket Sales Act, 15 U.S.C. 45c), it is **illegal to use automated software to circumvent security measures, access controls, or ticket purchasing limits on ticket sales websites**, and any tickets obtained through such means may be voided. This program does not bypass any access controls, interact with purchase flows, or submit any transactions. All purchasing decisions and actions are made by the human user.
+
 ## Why This Exists
 
 Hi, I'm Alex Yang — a lifelong soccer fan who's been dreaming of attending the FIFA World Cup 2026. When I finally sat down to buy tickets through FIFA's official portal, I was met with the most frustrating ticket sales experience imaginable: a queue page that shows "The page you are trying to access does not exist" for hours, then suddenly opens with a countdown timer, drops you into a queue, and expects you to be glued to your screen the entire time or risk missing your window.
