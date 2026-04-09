@@ -47,3 +47,6 @@ countdown_alerted = set()
 
 # Command log for dashboard display
 command_log = []  # list of {"time": str, "source": str, "command": str, "response": str}
+
+# Debug: store last page text from extension
+last_page_text = {"text": ""}

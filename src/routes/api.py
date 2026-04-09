@@ -4,11 +4,16 @@ API endpoints for the ticket monitor.
 
 from flask import Blueprint, jsonify, request
 
-from config import command_log, get_fifa_url, monitor_state, settings
+from config import command_log, get_fifa_url, last_page_text, monitor_state, settings
 from services.commands import process_command
 from services.monitor import analyze_page, check_countdown_thresholds
 
 api_bp = Blueprint("api", __name__)
+
+
+@api_bp.route("/api/debug/page-text")
+def debug_page_text():
+    return jsonify({"text": last_page_text["text"]})
 
 
 @api_bp.route("/api/page-content", methods=["POST"])
@@ -17,6 +22,7 @@ def page_content():
     if not data or "text" not in data:
         return jsonify({"error": "missing text"}), 400
 
+    last_page_text["text"] = data["text"]  # store for debug
     monitor_state["extension_connected"] = True
 
     # Handle countdown from extension

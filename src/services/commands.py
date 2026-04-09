@@ -29,8 +29,8 @@ def process_command(cmd: str, source: str = "dashboard") -> str:
         cd = monitor_state.get("countdown_status") or "not detected"
         alerted = sorted(countdown_alerted, reverse=True) if countdown_alerted else "none"
         response = (
-            f"URL: {get_fifa_url()}\n"
             f"Status: {monitor_state['status']}\n"
+            f"URL: {get_fifa_url()}\n"
             f"Countdown: {cd}\n"
             f"Countdown thresholds: {settings['countdown_thresholds']} min\n"
             f"Countdown alerted: {alerted}\n"
@@ -71,17 +71,15 @@ def process_command(cmd: str, source: str = "dashboard") -> str:
         else:
             response = f"Current thresholds: {settings['countdown_thresholds']} minutes\nUsage: countdown alerts 30,20,10,5,2,1"
 
-    # url command: show or change FIFA URL
-    elif cmd == "url" or cmd.startswith("url "):
-        if cmd.strip() == "url":
-            response = f"Current URL: {get_fifa_url()}"
+    # url: "url https://..." or "url" to show current
+    elif cmd.startswith("url"):
+        parts = cmd.split(None, 1)
+        if len(parts) > 1 and parts[1]:
+            new_url = parts[1].strip()
+            settings_url["fifa_url"] = new_url
+            response = f"FIFA URL set to: {new_url}"
         else:
-            new_url = cmd[4:].strip()
-            if new_url.startswith("http"):
-                settings_url["fifa_url"] = new_url
-                response = f"URL changed to: {new_url}"
-            else:
-                response = f"Invalid URL. Must start with http. Current: {get_fifa_url()}"
+            response = f"Current URL: {get_fifa_url()}"
 
     # reset countdown alerts
     elif cmd == "reset countdown":
