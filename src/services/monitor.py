@@ -9,8 +9,8 @@ import requests as http_requests
 from config import (
     CANNOT_ACCESS_TEXT,
     CHECK_INTERVAL,
-    FIFA_URL,
     countdown_alerted,
+    get_fifa_url,
     monitor_state,
     settings,
 )
@@ -90,7 +90,7 @@ def fallback_monitor_loop():
                 continue
 
         try:
-            resp = http_requests.get(FIFA_URL, timeout=20, headers={
+            resp = http_requests.get(get_fifa_url(), timeout=20, headers={
                 "User-Agent": (
                     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
                     "AppleWebKit/537.36 (KHTML, like Gecko) "

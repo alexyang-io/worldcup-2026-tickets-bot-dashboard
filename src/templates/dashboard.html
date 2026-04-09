@@ -203,6 +203,7 @@
     <span class="badge blue" id="reportBadge">Report: every 60s</span>
     <span class="badge yellow" id="slackCmdBadge">Slack cmds: checking…</span>
     <span class="badge blue" id="countdownBadge">Countdown: —</span>
+    <span class="badge blue" id="urlBadge" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="">URL: loading…</span>
   </div>
 
   <div class="status-section">
@@ -212,7 +213,7 @@
   </div>
 
   <div>
-    <button class="btn" onclick="window.open('{{ fifa_url }}', 'fifa_tickets')">
+    <button class="btn" onclick="openFifa()">
       Open FIFA Ticket Page
     </button>
     <button class="btn secondary" onclick="sendCmd('reset')">Reset Alert</button>
@@ -237,6 +238,7 @@
     <code>report every 2 minutes</code> — change Slack report frequency<br>
     <code>report now</code> — send a report immediately<br>
     <code>countdown alerts 30,20,10,5,2,1</code> — set countdown thresholds (min)<br>
+    <code>url https://access.tickets...</code> — change monitored URL<br>
     <code>reset countdown</code> — re-arm countdown alerts<br>
     <code>pause</code> / <code>resume</code> — pause/resume Slack reports<br>
     <code>status</code> — show current status<br>
@@ -253,11 +255,17 @@
   const reportBadge = document.getElementById('reportBadge');
   const slackCmdBadge = document.getElementById('slackCmdBadge');
   const countdownBadge = document.getElementById('countdownBadge');
+  const urlBadge = document.getElementById('urlBadge');
   const banner = document.getElementById('alertBanner');
+  let currentFifaUrl = '{{ fifa_url }}';
   const cmdInput = document.getElementById('cmdInput');
   const cmdResponse = document.getElementById('cmdResponse');
   const logSection = document.getElementById('logSection');
   let alertShown = false;
+
+  function openFifa() {
+    window.open(currentFifaUrl, 'fifa_tickets');
+  }
 
   async function sendCmd(cmd) {
     try {
@@ -318,6 +326,18 @@
       }
       slackCmdBadge.textContent = data.settings ? 'Slack cmds: active' : 'Slack cmds: off';
       slackCmdBadge.className = 'badge green';
+
+      // URL badge
+      if (data.fifa_url) {
+        currentFifaUrl = data.fifa_url;
+        try {
+          const short = new URL(data.fifa_url).hostname + '/…';
+          urlBadge.textContent = 'URL: ' + short;
+        } catch(e) {
+          urlBadge.textContent = 'URL: ' + data.fifa_url.substring(0, 30);
+        }
+        urlBadge.title = data.fifa_url;
+      }
 
       // Countdown badge
       if (data.countdown_status) {

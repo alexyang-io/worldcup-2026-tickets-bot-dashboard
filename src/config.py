@@ -4,10 +4,18 @@ Shared configuration and global state for the FIFA ticket monitor.
 
 import os
 
-FIFA_URL = (
+DEFAULT_FIFA_URL = (
     "https://access.tickets.fifa.com/pkpcontroller/wp/FWC26SHOP/"
     "index_en.html?queue=11-FWC26-Shop"
 )
+FIFA_URL = DEFAULT_FIFA_URL  # backward compat
+
+# Mutable URL setting (changeable via commands)
+settings_url = {"fifa_url": DEFAULT_FIFA_URL}
+
+
+def get_fifa_url():
+    return settings_url["fifa_url"]
 CANNOT_ACCESS_TEXT = "The page you are trying to access does not exist"
 CHECK_INTERVAL = 30
 SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL", "")

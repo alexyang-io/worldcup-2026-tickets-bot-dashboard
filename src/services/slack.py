@@ -6,7 +6,7 @@ import time
 
 import requests as http_requests
 
-from config import FIFA_URL, SLACK_WEBHOOK_URL, monitor_state, settings
+from config import SLACK_WEBHOOK_URL, get_fifa_url, monitor_state, settings
 
 
 def send_slack_message(text: str):
@@ -23,7 +23,7 @@ def send_slack_message(text: str):
 def send_slack_alert(message: str):
     send_slack_message(
         f":rotating_light: *FIFA WC 2026 Ticket Alert* :rotating_light:\n"
-        f"{message}\n\n<{FIFA_URL}|Open ticket page>"
+        f"{message}\n\n<{get_fifa_url()}|Open ticket page>"
     )
 
 

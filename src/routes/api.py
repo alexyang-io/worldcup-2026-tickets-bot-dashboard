@@ -4,7 +4,7 @@ API endpoints for the ticket monitor.
 
 from flask import Blueprint, jsonify, request
 
-from config import command_log, monitor_state, settings
+from config import command_log, get_fifa_url, monitor_state, settings
 from services.commands import process_command
 from services.monitor import analyze_page, check_countdown_thresholds
 
@@ -37,7 +37,7 @@ def page_content():
 
 @api_bp.route("/api/status")
 def api_status():
-    return jsonify({**monitor_state, "settings": settings})
+    return jsonify({**monitor_state, "settings": settings, "fifa_url": get_fifa_url()})
 
 
 @api_bp.route("/api/command", methods=["POST"])
