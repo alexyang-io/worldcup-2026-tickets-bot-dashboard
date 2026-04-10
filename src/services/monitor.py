@@ -57,6 +57,11 @@ def analyze_page(text: str, source: str):
     else:
         if "In Queue" in text:
             msg = "You are IN THE QUEUE! Go go go!"
+        elif "enter in" in text.lower() and monitor_state.get("countdown_seconds"):
+            cd = monitor_state["countdown_seconds"]
+            msg = f"Countdown active! {cd // 60:02d}:{cd % 60:02d} remaining"
+        elif "enter in" in text.lower():
+            msg = "Countdown page detected — timer running!"
         elif "queue" in text.lower() or "waiting" in text.lower():
             msg = "Queue page detected — may be opening!"
         else:
