@@ -2,6 +2,7 @@
 Page analysis and fallback server-side monitor.
 """
 
+import re
 import time
 
 import requests as http_requests
@@ -15,6 +16,37 @@ from config import (
     settings,
 )
 from services.slack import send_slack_alert, send_slack_message, send_slack_status_update
+
+
+def parse_countdown_from_text(text: str):
+    """Parse countdown seconds from page text server-side.
+
+    The FIFA page shows:
+        You will be able to enter in....
+        07:30
+        min.
+        sec.
+    """
+    if "enter in" not in text.lower():
+        return None
+    lines = [l.strip() for l in text.split("\n") if l.strip()]
+    for i, line in enumerate(lines):
+        # Match MM:SS (e.g., "07:30", "11:50")
+        m = re.match(r"^(\d{1,3}):(\d{2})$", line)
+        if m:
+            mins = int(m.group(1))
+            secs = int(m.group(2))
+            return mins * 60 + secs
+        # Match standalone number followed by "sec." on next line
+        m = re.match(r"^(\d{1,4})$", line)
+        if m:
+            val = int(m.group(1))
+            next_line = lines[i + 1].lower() if i + 1 < len(lines) else ""
+            if "sec" in next_line:
+                return val
+            if "min" in next_line:
+                return val * 60
+    return None
 
 
 def send_countdown_alert(minutes_remaining: int, seconds_total: int):
@@ -51,17 +83,27 @@ def analyze_page(text: str, source: str):
         print(f"[{ts}] [{source}] Ignoring bad response from server")
         return
 
+    # Server-side countdown parsing from page text
+    countdown_secs = parse_countdown_from_text(text)
+    if countdown_secs is not None:
+        monitor_state["countdown_seconds"] = countdown_secs
+        mins = countdown_secs // 60
+        secs = countdown_secs % 60
+        monitor_state["countdown_status"] = f"{mins:02d}:{secs:02d} remaining"
+        check_countdown_thresholds(countdown_secs)
+    elif "enter in" not in text.lower():
+        monitor_state["countdown_seconds"] = None
+        monitor_state["countdown_status"] = None
+
     if CANNOT_ACCESS_TEXT in text:
         monitor_state["status"] = "Still showing 'Cannot access' page"
         monitor_state["changed"] = False
     else:
         if "In Queue" in text:
             msg = "You are IN THE QUEUE! Go go go!"
-        elif "enter in" in text.lower() and monitor_state.get("countdown_seconds"):
+        elif monitor_state.get("countdown_seconds") is not None:
             cd = monitor_state["countdown_seconds"]
             msg = f"Countdown active! {cd // 60:02d}:{cd % 60:02d} remaining"
-        elif "enter in" in text.lower():
-            msg = "Countdown page detected — timer running!"
         elif "queue" in text.lower() or "waiting" in text.lower():
             msg = "Queue page detected — may be opening!"
         else:

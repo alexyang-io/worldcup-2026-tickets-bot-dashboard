@@ -45,16 +45,16 @@ pip install flask requests
 src/
 ├── __init__.py                # Package root with __version__
 ├── app.py                     # Entry point — create_app() factory, starts background threads
-├── config.py                  # All constants, env vars, shared mutable state (monitor_state, settings, countdown_alerted, command_log)
+├── config.py                  # All constants, env vars, shared mutable state (monitor_state, settings, settings_url, countdown_alerted, command_log, last_page_text)
 ├── services/
 │   ├── __init__.py
 │   ├── slack.py               # send_slack_message(), send_slack_alert(), send_slack_status_update()
-│   ├── commands.py            # process_command() — shared command processor for dashboard + Slack
-│   ├── monitor.py             # analyze_page(), fallback_monitor_loop(), countdown alert functions
+│   ├── commands.py            # process_command() — shared command processor for dashboard + Slack (including url command)
+│   ├── monitor.py             # analyze_page(), parse_countdown_from_text(), fallback_monitor_loop(), countdown alert functions
 │   └── slack_listener.py      # slack_command_listener() — polls Slack channel for commands
 ├── routes/
 │   ├── __init__.py
-│   ├── api.py                 # Flask Blueprint: /api/page-content, /api/status, /api/command, /api/commands, /api/reset
+│   ├── api.py                 # Flask Blueprint: /api/page-content, /api/status, /api/command, /api/commands, /api/reset, /api/debug/page-text
 │   └── dashboard.py           # Flask Blueprint: / (serves Jinja2 template)
 └── templates/
     └── dashboard.html         # Jinja2 template — dark theme dashboard with badges, command console, alert banner
@@ -70,10 +70,14 @@ chrome_extension/
 
 All mutable state lives in `config.py` as module-level dicts/sets so all modules share the same references:
 
+- `DEFAULT_FIFA_URL` — the default FIFA ticket page URL constant
+- `settings_url` dict — `{"fifa_url": DEFAULT_FIFA_URL}`, changeable at runtime via the `url` command
+- `get_fifa_url()` — accessor function that returns the current FIFA URL from `settings_url`
 - `monitor_state` dict — current status, changed flag, alert_sent, last_check time, source (extension/server), extension_connected, countdown_seconds, countdown_status
 - `settings` dict — report_interval (default 60s), paused, alert_on_change, countdown_thresholds ([30,20,10,5,2,1] minutes)
 - `countdown_alerted` set — tracks which minute-thresholds have fired (prevents duplicate alerts)
 - `command_log` list — last 50 commands with timestamp, source, command text, response text
+- `last_page_text` dict — `{"text": ""}`, stores last page text received from extension for debug
 
 ### Flask App (app.py)
 
@@ -85,14 +89,20 @@ All mutable state lives in `config.py` as module-level dicts/sets so all modules
 
 ### Page Analysis (services/monitor.py)
 
+`parse_countdown_from_text(text)`:
+- Server-side countdown parser that extracts countdown seconds from page text
+- Looks for "enter in" text, then parses MM:SS (e.g. "07:30") or standalone number with sec/min label on the next line
+- Returns total seconds or None
+
 `analyze_page(text, source)`:
 - Ignores bad/blocked server responses (text contains "bad request", `<title>Bad`, or is < 20 chars) — only for source="server"
+- Calls `parse_countdown_from_text()` to detect and update countdown state server-side (works for both extension and server sources)
 - Detects "Cannot access" text → status unchanged
-- Detects "In Queue", queue/waiting keywords, or any other change → sets changed=True, sends Slack alert (once)
+- Detects "In Queue", active countdown, queue/waiting keywords, or any other change → sets changed=True, sends Slack alert (once)
 - Sends periodic Slack status updates based on `settings["report_interval"]` unless paused
 
 `fallback_monitor_loop()`:
-- Waits 60s for extension to connect, then polls FIFA URL directly every 30s
+- Waits 60s for extension to connect, then polls FIFA URL directly every 30s via `get_fifa_url()`
 - Skips if extension is connected and reporting
 - Uses Chrome-like User-Agent header
 
@@ -103,7 +113,7 @@ Countdown functions:
 ### Slack Services (services/slack.py)
 
 - `send_slack_message(text)` — base function, POSTs to webhook. Prints to console if no webhook configured
-- `send_slack_alert(message)` — wraps with rotating_light emoji and FIFA URL link
+- `send_slack_alert(message)` — wraps with rotating_light emoji and dynamic FIFA URL link via `get_fifa_url()`
 - `send_slack_status_update(status, page_summary)` — includes timestamp, status, countdown info, report interval, paused state, and page content summary (truncated to 300 chars)
 
 ### Command Processor (services/commands.py)
@@ -114,10 +124,12 @@ Countdown functions:
 |---------|--------|
 | `report every N minutes/seconds` | Change report interval (min 10s) |
 | `report now` | Force next report by resetting last_slack_update to 0 |
-| `status` | Show full status including countdown, thresholds, extension state |
+| `status` | Show full status including URL, countdown, thresholds, extension state |
 | `pause` / `resume` | Pause/resume periodic Slack reports |
 | `reset` | Reset alert_sent and changed flags |
 | `countdown alerts 30,20,10` | Set countdown threshold minutes |
+| `url` | Show current FIFA ticket URL |
+| `url <full-url>` | Change the monitored URL at runtime via `settings_url` |
 | `reset countdown` | Clear countdown_alerted set (re-arms all thresholds) |
 | `help` / `list commands` / `commands` | Show help text |
 
@@ -137,20 +149,20 @@ Countdown functions:
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/api/page-content` | POST | Extension sends `{text, url, countdown_seconds, queue_progress, progress_debug, dom_snapshot}`. Updates countdown state and calls `analyze_page()` |
-| `/api/status` | GET | Returns `{...monitor_state, settings: {...}}` |
+| `/api/page-content` | POST | Extension sends `{text, url, ...}`. Stores text for debug, marks extension connected, calls `analyze_page()` (countdown parsing is handled server-side in `analyze_page`) |
+| `/api/status` | GET | Returns `{...monitor_state, settings: {...}, fifa_url: "..."}` |
 | `/api/command` | POST | Accepts `{command: "..."}`, returns `{ok, response}` |
 | `/api/commands` | GET | Returns last 20 command log entries |
+| `/api/debug/page-text` | GET | Returns `{text: "..."}` — last page text received from extension (for troubleshooting) |
 | `/api/reset` | POST | Resets alert_sent, changed, status |
-
-The `/api/page-content` endpoint handles countdown: if `countdown_seconds` is present, formats as `MM:SS remaining` and calls `check_countdown_thresholds()`.
 
 ### Dashboard (routes/dashboard.py + templates/dashboard.html)
 
 - Blueprint with `template_folder` pointing to `../templates`
-- Passes `fifa_url` to the Jinja2 template via `{{ fifa_url }}`
+- Passes `fifa_url` via `get_fifa_url()` to the Jinja2 template
 - Dark theme (#0e0e1a background, #181830 card)
-- Status badges: Extension (green/yellow), Report interval (blue/red when paused), Slack cmds (green), Countdown (blue/yellow/red based on time: red <=5min, yellow <=10min)
+- Status badges: Extension (green/yellow), Report interval (blue/red when paused), Slack cmds (green), Countdown (blue/yellow/red based on time: red <=5min, yellow <=10min), URL (blue, truncated with tooltip)
+- Dynamic FIFA URL: JS `currentFifaUrl` variable updated from `/api/status` poll, used by `openFifa()` function
 - Pulsing status dot: waiting (gray), monitoring (amber), changed (green), error (red)
 - Alert banner with popIn animation when page changes
 - Audio beep + browser Notification on change

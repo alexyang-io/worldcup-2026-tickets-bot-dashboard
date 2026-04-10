@@ -160,7 +160,7 @@ The dashboard will be available at **http://localhost:7777**.
 
 The dashboard at `http://localhost:7777` shows live status with:
 
-- **Status badges** — Extension connection (green/yellow), report interval, Slack command listener, live countdown timer (color-coded: blue > 10min, yellow 5-10min, red < 5min)
+- **Status badges** — Extension connection (green/yellow), report interval, Slack command listener, live countdown timer (color-coded: blue > 10min, yellow 5-10min, red < 5min), monitored URL
 - **Alert banner** — green popup + audio beep + browser notification when the page changes
 - **Command console** — type commands directly, see responses and command history
 
@@ -173,6 +173,8 @@ All commands work from both the dashboard console and Slack:
 | `report every N minutes` | Change Slack report frequency |
 | `report every N seconds` | Change report frequency (min 10s) |
 | `report now` | Send a status report immediately |
+| `url` | Show current FIFA ticket URL |
+| `url <full-url>` | Change the monitored URL at runtime |
 | `countdown alerts 30,20,10,5,2,1` | Set countdown alert thresholds (minutes) |
 | `reset countdown` | Re-arm all countdown alerts |
 | `status` | Show full current status |
