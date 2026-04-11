@@ -160,7 +160,7 @@ The dashboard will be available at **http://localhost:7777**.
 
 The dashboard at `http://localhost:7777` shows live status with:
 
-- **Status badges** — Extension connection (green/yellow), report interval, Slack command listener, live countdown timer (color-coded: blue > 10min, yellow 5-10min, red < 5min), monitored URL
+- **Status badges** — Extension connection (green/yellow), report interval, Slack command listener, live countdown timer (color-coded: blue > 10min, yellow 5-10min, red < 5min), queue progress (blue < 50%, yellow 50-79%, green >= 80%), monitored URL
 - **Alert banner** — green popup + audio beep + browser notification when the page changes
 - **Command console** — type commands directly, see responses and command history
 

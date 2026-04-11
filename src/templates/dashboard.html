@@ -203,6 +203,7 @@
     <span class="badge blue" id="reportBadge">Report: every 60s</span>
     <span class="badge yellow" id="slackCmdBadge">Slack cmds: checking…</span>
     <span class="badge blue" id="countdownBadge">Countdown: —</span>
+    <span class="badge blue" id="progressBadge">Progress: —</span>
     <span class="badge blue" id="urlBadge" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="">URL: loading…</span>
   </div>
 
@@ -255,6 +256,7 @@
   const reportBadge = document.getElementById('reportBadge');
   const slackCmdBadge = document.getElementById('slackCmdBadge');
   const countdownBadge = document.getElementById('countdownBadge');
+  const progressBadge = document.getElementById('progressBadge');
   const urlBadge = document.getElementById('urlBadge');
   const banner = document.getElementById('alertBanner');
   let currentFifaUrl = '{{ fifa_url }}';
@@ -326,6 +328,15 @@
       }
       slackCmdBadge.textContent = data.settings ? 'Slack cmds: active' : 'Slack cmds: off';
       slackCmdBadge.className = 'badge green';
+
+      // Progress badge
+      if (data.queue_progress !== null && data.queue_progress !== undefined) {
+        progressBadge.textContent = 'Progress: ' + data.queue_progress + '%';
+        progressBadge.className = data.queue_progress >= 80 ? 'badge green' : data.queue_progress >= 50 ? 'badge yellow' : 'badge blue';
+      } else {
+        progressBadge.textContent = 'Progress: —';
+        progressBadge.className = 'badge blue';
+      }
 
       // URL badge
       if (data.fifa_url) {
