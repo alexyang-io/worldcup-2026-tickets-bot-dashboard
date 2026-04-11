@@ -100,7 +100,11 @@ def analyze_page(text: str, source: str):
         monitor_state["changed"] = False
     else:
         if "In Queue" in text:
-            msg = "You are IN THE QUEUE! Go go go!"
+            progress = monitor_state.get("queue_progress")
+            if progress is not None:
+                msg = f"IN THE QUEUE! Progress: {progress}%"
+            else:
+                msg = "You are IN THE QUEUE! Go go go!"
         elif monitor_state.get("countdown_seconds") is not None:
             cd = monitor_state["countdown_seconds"]
             msg = f"Countdown active! {cd // 60:02d}:{cd % 60:02d} remaining"

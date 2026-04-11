@@ -30,10 +30,13 @@ def send_slack_alert(message: str):
 def send_slack_status_update(status: str, page_summary: str):
     ts = time.strftime("%Y-%m-%d %H:%M:%S")
     cd = monitor_state.get("countdown_status") or "not detected"
+    progress = monitor_state.get("queue_progress")
+    progress_str = f"{progress}%" if progress is not None else "not detected"
     send_slack_message(
         f":satellite: *FIFA Ticket Monitor — Status Update*\n"
         f"*Time:* {ts}\n"
         f"*Status:* {status}\n"
+        f"*Queue progress:* {progress_str}\n"
         f"*Countdown:* {cd}\n"
         f"*Report interval:* {settings['report_interval']}s | *Paused:* {settings['paused']}\n"
         f"*Page content:* {page_summary}"

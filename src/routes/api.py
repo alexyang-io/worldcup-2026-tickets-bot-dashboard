@@ -13,7 +13,11 @@ api_bp = Blueprint("api", __name__)
 
 @api_bp.route("/api/debug/page-text")
 def debug_page_text():
-    return jsonify({"text": last_page_text["text"]})
+    return jsonify({
+        "text": last_page_text["text"],
+        "progress_debug": last_page_text.get("progress_debug"),
+        "dom_snapshot": last_page_text.get("dom_snapshot"),
+    })
 
 
 @api_bp.route("/api/page-content", methods=["POST"])
@@ -23,7 +27,17 @@ def page_content():
         return jsonify({"error": "missing text"}), 400
 
     last_page_text["text"] = data["text"]  # store for debug
+    last_page_text["progress_debug"] = data.get("progress_debug")
+    last_page_text["dom_snapshot"] = data.get("dom_snapshot")
     monitor_state["extension_connected"] = True
+
+    # Queue progress from extension
+    progress = data.get("queue_progress")
+    if progress is not None:
+        monitor_state["queue_progress"] = progress
+    else:
+        monitor_state["queue_progress"] = None
+
     analyze_page(data["text"], source="extension")
     return jsonify({"ok": True})
 

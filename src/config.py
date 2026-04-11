@@ -32,6 +32,7 @@ monitor_state = {
     "last_slack_update": 0,
     "countdown_seconds": None,
     "countdown_status": None,
+    "queue_progress": None,
 }
 
 # Mutable settings (controllable via commands)
