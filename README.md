@@ -184,6 +184,8 @@ All commands work from both the dashboard console and Slack:
 | `reset` | Reset page-change alert state |
 | `help` | Show all commands |
 
+Commands sent from Slack are picked up by the bot and processed in real time. Responses are posted back to the channel, so you can control the monitor entirely from your phone.
+
 ![Slack Interactions](screens/Screenshot%20-%20Slack%20Interactions.png)
 
 ### Slack Alerts
