@@ -158,6 +158,8 @@ The dashboard will be available at **http://localhost:7777**.
 
 ### Dashboard
 
+![Dashboard UI](screens/Screenshot%20-%20Dashboard%20Waiting.png)
+
 The dashboard at `http://localhost:7777` shows live status with:
 
 - **Status badges** — Extension connection (green/yellow), report interval, Slack command listener, live countdown timer (color-coded: blue > 10min, yellow 5-10min, red < 5min), queue progress (blue < 50%, yellow 50-79%, green >= 80%), monitored URL
@@ -182,7 +184,11 @@ All commands work from both the dashboard console and Slack:
 | `reset` | Reset page-change alert state |
 | `help` | Show all commands |
 
+![Slack Interactions](screens/Screenshot%20-%20Slack%20Interactions.png)
+
 ### Slack Alerts
+
+![Slack Notifications](screens/Screenshot%20-%20Slack%20Notifications.png)
 
 The system sends four types of Slack messages:
 
